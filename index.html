@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic SaaS & Financial Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js para os gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Three.js para o cenário 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen antialiased selection:bg-cyan-500 selection:text-black">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- SIDEBAR -->
+        <aside class="w-64 glass-panel border-r border-slate-800/80 hidden md:flex flex-col justify-between p-6">
+            <div>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                        <i data-lucide="box" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg tracking-wide text-white">AuraSaaS</h1>
+                        <p class="text-xs text-slate-400" data-i18n="subtitle">Enterprise Edition</p>
+                    </div>
+                </div>
+
+                <nav class="space-y-2">
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium transition-all">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        <span data-i18n="nav_dashboard">Dashboard</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900/50 transition-all">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        <span data-i18n="nav_customers">Customers</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900/50 transition-all">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i>
+                        <span data-i18n="nav_transactions">Transactions</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900/50 transition-all">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                        <span data-i18n="nav_analytics">Analytics</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="glass-panel p-4 rounded-xl border border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">AF</div>
+                    <div>
+                        <p class="text-sm font-semibold text-white">Andréia Antunes</p>
+                        <p class="text-xs text-cyan-400" data-i18n="role">Data Analyst</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <!-- HEADER -->
+            <header class="h-20 glass-panel border-b border-slate-800/80 flex items-center justify-between px-8 sticky top-0 z-50">
+                <div class="flex items-center gap-4 w-96">
+                    <div class="relative w-full">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3.5"></i>
+                        <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="Search transactions, users..." 
+                            class="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 transition-all">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <!-- BOTÃO DE TROCAR IDIOMA -->
+                    <button onclick="toggleLanguage()" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-xs font-semibold text-slate-300 transition-all shadow-sm">
+                        <i data-lucide="globe" class="w-4 h-4 text-cyan-400"></i>
+                        <span id="langLabel">PT / EN</span>
+                    </button>
+
+                    <button onclick="simulatePayment()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm shadow-lg shadow-cyan-500/20 transition-all">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        <span data-i18n="btn_simulate">Simulate Payment</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- DASHBOARD BODY -->
+            <div class="p-8 space-y-8 max-w-7xl mx-auto w-full">
+                <!-- TOP METRICS CARDS -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold" data-i18n="card_mrr">Monthly Recurring Rev</p>
+                                <h3 id="metricMRR" class="text-2xl font-bold text-white mt-1">$45,830.00</h3>
+                            </div>
+                            <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                                <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-medium">
+                            <i data-lucide="trending-up" class="w-4 h-4"></i> +12.4% <span class="text-slate-400" data-i18n="vs_last_month">vs last month</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold" data-i18n="card_subscribers">Active Subscribers</p>
+                                <h3 id="metricSubs" class="text-2xl font-bold text-white mt-1">1,420</h3>
+                            </div>
+                            <div class="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-medium">
+                            <i data-lucide="trending-up" class="w-4 h-4"></i> +8.1% <span class="text-slate-400" data-i18n="vs_last_month">vs last month</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold" data-i18n="card_churn">Churn Rate</p>
+                                <h3 class="text-2xl font-bold text-white mt-1">2.1%</h3>
+                            </div>
+                            <div class="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                <i data-lucide="user-minus" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-medium">
+                            <i data-lucide="trending-down" class="w-4 h-4"></i> -0.4% <span class="text-slate-400" data-i18n="vs_last_month">vs last month</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold" data-i18n="card_ltv">Customer LTV</p>
+                                <h3 class="text-2xl font-bold text-white mt-1">$1,111.33</h3>
+                            </div>
+                            <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                <i data-lucide="award" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-medium">
+                            <i data-lucide="trending-up" class="w-4 h-4"></i> +15.3% <span class="text-slate-400" data-i18n="vs_last_month">vs last month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MIDDLE SECTION: 3D WEBGL VIEWER & CHARTS -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- 3D INTERACTIVE CANVAS (CENTRALPIECE) -->
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 flex flex-col justify-between relative overflow-hidden h-[380px]">
+                        <div class="flex justify-between items-center z-10">
+                            <div>
+                                <h3 class="font-bold text-white text-base" data-i18n="webgl_title">WebGL 3D Core Node</h3>
+                                <p class="text-xs text-slate-400" data-i18n="webgl_sub">Interactive Particle Simulation</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="toggleRotation()" class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-cyan-400 hover:bg-slate-800"><i data-lucide="rotate-cw" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                        <!-- Canvas Container -->
+                        <div id="canvas-container" class="absolute inset-0 z-0"></div>
+                        <div class="z-15 pointer-events-none mt-auto bg-slate-950/60 p-3 rounded-xl backdrop-blur-md border border-slate-800/50">
+                            <p class="text-xs text-cyan-400 font-mono" data-i18n="webgl_status">Status: Synchronized with Live Ledger</p>
+                        </div>
+                    </div>
+
+                    <!-- REVENUE CHART -->
+                    <div class="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800/80 flex flex-col justify-between h-[380px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="font-bold text-white text-base" data-i18n="chart_title">Revenue Trajectory & Targets</h3>
+                                <p class="text-xs text-slate-400" data-i18n="chart_sub">Performance metrics over time</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-semibold border border-cyan-500/20" data-i18n="live_feed">Live Feed</span>
+                        </div>
+                        <div class="flex-1 relative w-full h-full">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RECENT TRANSACTIONS TABLE -->
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800/80">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="font-bold text-white text-base" data-i18n="table_title">Recent Subscription Transactions</h3>
+                            <p class="text-xs text-slate-400" data-i18n="table_sub">Real-time ledger events from customer accounts</p>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono" id="txCount">Showing 5 entries</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                    <th class="py-3 px-4" data-i18n="th_id">Transaction ID</th>
+                                    <th class="py-3 px-4" data-i18n="th_customer">Customer</th>
+                                    <th class="py-3 px-4" data-i18n="th_plan">Subscription Plan</th>
+                                    <th class="py-3 px-4" data-i18n="th_amount">Amount</th>
+                                    <th class="py-3 px-4" data-i18n="th_status">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable" class="divide-y divide-slate-800/50 text-sm">
+                                <tr class="hover:bg-slate-900/40 transition-colors">
+                                    <td class="py-3 px-4 font-mono text-cyan-400">TXN-9021</td>
+                                    <td class="py-3 px-4">Alex Morgan</td>
+                                    <td class="py-3 px-4">Enterprise ($299/mo)</td>
+                                    <td class="py-3 px-4 font-bold text-white">$299.00</td>
+                                    <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" data-i18n="status_success">Success</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-900/40 transition-colors">
+                                    <td class="py-3 px-4 font-mono text-cyan-400">TXN-9020</td>
+                                    <td class="py-3 px-4">Sarah Connor</td>
+                                    <td class="py-3 px-4">Pro ($99/mo)</td>
+                                    <td class="py-3 px-4 font-bold text-white">$99.00</td>
+                                    <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" data-i18n="status_success">Success</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-900/40 transition-colors">
+                                    <td class="py-3 px-4 font-mono text-cyan-400">TXN-9019</td>
+                                    <td class="py-3 px-4">Marcus Aurelius</td>
+                                    <td class="py-3 px-4">Basic ($29/mo)</td>
+                                    <td class="py-3 px-4 font-bold text-white">$29.00</td>
+                                    <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" data-i18n="status_success">Success</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & 3D ENGINE -->
+    <script>
+        // Inicializar ícones Lucide
+        lucide.createIcons();
+
+        // DICIONÁRIO DE IDIOMAS (PT / EN)
+        const translations = {
+            en: {
+                subtitle: "Enterprise Edition",
+                nav_dashboard: "Dashboard",
+                nav_customers: "Customers",
+                nav_transactions: "Transactions",
+                nav_analytics: "Analytics",
+                role: "Data Analyst",
+                search_placeholder: "Search transactions, users...",
+                btn_simulate: "Simulate Payment",
+                card_mrr: "Monthly Recurring Rev",
+                card_subscribers: "Active Subscribers",
+                card_churn: "Churn Rate",
+                card_ltv: "Customer LTV",
+                vs_last_month: "vs last month",
+                webgl_title: "WebGL 3D Core Node",
+                webgl_sub: "Interactive Particle Simulation",
+                webgl_status: "Status: Synchronized with Live Ledger",
+                chart_title: "Revenue Trajectory & Targets",
+                chart_sub: "Performance metrics over time",
+                live_feed: "Live Feed",
+                table_title: "Recent Subscription Transactions",
+                table_sub: "Real-time ledger events from customer accounts",
+                th_id: "Transaction ID",
+                th_customer: "Customer",
+                th_plan: "Subscription Plan",
+                th_amount: "Amount",
+                th_status: "Status",
+                status_success: "Success"
+            },
+            pt: {
+                subtitle: "Edição Corporativa",
+                nav_dashboard: "Painel Principal",
+                nav_customers: "Clientes",
+                nav_transactions: "Transações",
+                nav_analytics: "Análises",
+                role: "Analista de Dados",
+                search_placeholder: "Pesquisar transações, usuários...",
+                btn_simulate: "Simular Pagamento",
+                card_mrr: "Receita Recorrente Mensal",
+                card_subscribers: "Assinantes Ativos",
+                card_churn: "Taxa de Churn",
+                card_ltv: "LTV do Cliente",
+                vs_last_month: "vs mês passado",
+                webgl_title: "Núcleo 3D WebGL",
+                webgl_sub: "Simulação Interativa de Partículas",
+                webgl_status: "Status: Sincronizado com o Ledger",
+                chart_title: "Trajetória de Receita & Metas",
+                chart_sub: "Métricas de desempenho ao longo do tempo",
+                live_feed: "Feed ao Vivo",
+                table_title: "Transações de Assinatura Recentes",
+                table_sub: "Eventos de ledger em tempo real das contas",
+                th_id: "ID da Transação",
+                th_customer: "Cliente",
+                th_plan: "Plano de Assinatura",
+                th_amount: "Valor",
+                th_status: "Status",
+                status_success: "Sucesso"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'pt' : 'en';
+            document.getElementById('langLabel').innerText = currentLang === 'en' ? 'PT / EN' : 'EN / PT';
+            
+            // Atualizar textos normais
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    el.innerText = translations[currentLang][key];
+                }
+            });
+
+            // Atualizar placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[currentLang][key]) {
+                    el.placeholder = translations[currentLang][key];
+                }
+            });
+        }
+
+        // Three.js 3D WebGL Centerpiece
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
+
+        // Geometria 3D: Icosaedro de Cristal
+        const geometry = new THREE.IcosahedronGeometry(1.8, 0);
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x00f2fe,
+            wireframe: true,
+            emissive: 0x4facfe,
+            emissiveIntensity: 0.4
+        });
+        const crystal = new THREE.Mesh(geometry, material);
+        scene.add(crystal);
+
+        // Anel Órbita
+        const ringGeo = new THREE.TorusGeometry(2.8, 0.02, 16, 100);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0x6366f1, transparent: true, opacity: 0.6 });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 3;
+        scene.add(ring);
+
+        // Luzes
+        const light = new THREE.PointLight(0xffffff, 2, 50);
+        light.position.set(5, 5, 5);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+        camera.position.z = 6;
+
+        let isRotating = true;
+        function toggleRotation() { isRotating = !isRotating; }
+
+        // Animação Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            if (isRotating) {
+                crystal.rotation.x += 0.005;
+                crystal.rotation.y += 0.008;
+                ring.rotation.z -= 0.004;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Chart.js Gráfico de Receita
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'MRR ($)',
+                    data: [28000, 31000, 34500, 36200, 39000, 41200, 43000, 44500, 45830, 47500, 49000, 52000],
+                    borderColor: '#00f2fe',
+                    backgroundColor: 'rgba(0, 242, 254, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        // Simular Pagamento Interativo
+        let currentMRR = 45830;
+        let currentSubs = 1420;
+        let txCounter = 9021;
+
+        function simulatePayment() {
+            currentMRR += 299;
+            currentSubs += 1;
+            txCounter += 1;
+
+            document.getElementById('metricMRR').innerText = `$${currentMRR.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('metricSubs').innerText = currentSubs.toLocaleString('en-US');
+
+            // Adicionar pulso no 3D
+            crystal.scale.set(1.2, 1.2, 1.2);
+            setTimeout(() => crystal.scale.set(1, 1, 1), 200);
+
+            // Adicionar nova linha na tabela
+            const tbody = document.getElementById('transactionsTable');
+            const newRow = document.createElement('tr');
+            newRow.className = 'hover:bg-slate-900/40 transition-colors animate-pulse';
+            
+            const successText = currentLang === 'en' ? 'Success' : 'Sucesso';
+            const names = ['Elena Rostova', 'Lucas Silva', 'Sophie Turner', 'Kenji Sato', 'Beatriz Lima'];
+            const plans = ['Enterprise ($299/mo)', 'Pro ($99/mo)', 'Basic ($29/mo)'];
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            const randomPlan = plans[Math.floor(Math.random() * plans.length)];
+            const amount = randomPlan.includes('299') ? '$299.00' : (randomPlan.includes('99') ? '$99.00' : '$29.00');
+
+            newRow.innerHTML = `
+                <td class="py-3 px-4 font-mono text-cyan-400">TXN-${txCounter}</td>
+                <td class="py-3 px-4">${randomName}</td>
+                <td class="py-3 px-4">${randomPlan}</td>
+                <td class="py-3 px-4 font-bold text-white">${amount}</td>
+                <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">${successText}</span></td>
+            `;
+            tbody.insertBefore(newRow, tbody.firstChild);
+        }
+
+        // Filtro da Tabela em Tempo Real
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#transactionsTable tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>
